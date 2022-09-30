@@ -11,9 +11,9 @@ React를 사용한 todo-list 웹 페이지(2022)
 [React 기초 입문 프로젝트](https://velopert.com/3480)
 
 
->**자료 link**
+>**웹 페이지 link**
 
-[todo list 벨로퍼트](https://kylee31.github.io/todo_list/)
+[todo list](https://kylee31.github.io/todo_list/)
 
 ## 프로젝트(클론 코딩) 공부
 
