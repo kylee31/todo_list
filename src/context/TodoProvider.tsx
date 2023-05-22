@@ -1,12 +1,28 @@
 import React, { createContext, useContext, useMemo, useRef, useState } from 'react';
 
 //useReducer 없이 Context를 사용해서 전역 상태 관리를 하기 위해서
-//아래와 같이 업데이트 함수들이 들어있는 객체를 바로 선언해주었다
+//아래와 같이 업데이트 함수들이 들어있는 객체를 바로 선언해주었다.
 
-const TodoValueContext = createContext();
-const TodoActionsContext = createContext();
+//위와 같은 방법은 typescript를 적용하면서 any로 선언해주어야 하는 일이 발생.. (해결책 있는지 찾아보기)
 
-function TodoProvider({ children }) {
+//useReducer 사용해서 dispatch, reducer 쓰는걸로 변경
+
+export interface Todo{
+    id: number,
+    text: string, 
+    checked: boolean
+}
+
+export type Action=
+    | { add(input: string): void; }
+    | { toggle(id: number): void; }
+    | { remove(id: number): void; }
+    | any
+
+const TodoValueContext = createContext<Todo[]|undefined>(undefined);
+const TodoActionsContext = createContext<Action|undefined>(undefined);
+
+function TodoProvider({ children }:any) {
 
     const idRef = useRef(3);
 
@@ -19,25 +35,23 @@ function TodoProvider({ children }) {
     const [todos, setTodos] = useState(init);
 
     const actions = useMemo(() => ({
-        add(input) {
+        add(input:string) {
             const id = idRef.current;
             idRef.current += 1;
-            //왜 이렇게 해야하나여? useState의 set함수는 바로 실행하는 것이 아니라
-            //
             setTodos((todos) => [...todos, {
                 id: id,
                 text: input,
                 checked: false
             }])
         },
-        toggle(id) {
+        toggle(id:number) {
 
             setTodos((todos) => todos.map((todo) => todo.id === id ? {
                 ...todo,
                 checked: !todo.checked
             } : todo));
         },
-        remove(id) {
+        remove(id:number) {
             setTodos((todos) => todos.filter(todo => todo.id !== id));
         }
     }), []);
