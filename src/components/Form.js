@@ -1,12 +1,12 @@
 import React from 'react';
-import './Form.css';
+import '../css/Form.css';
 
 //input과 button이 담겨있는 컴포넌트
 
-const Form=({value, onChange,onCreate, onKeyPress})=>{
-    return(
+function Form({ value, onChange, onCreate, onKeyPress }) {
+    return (
         <div className="form">
-            <input value={value} onChange={onChange} onKeyPress={onKeyPress}/>
+            <input value={value} onChange={onChange} onKeyPress={onKeyPress} />
             <div className="create-button" onClick={onCreate}>
                 추가
             </div>
