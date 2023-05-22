@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo, useRef, useState } from 'react';
+import React, { Dispatch, MutableRefObject, createContext, useContext, useMemo, useReducer, useRef, useState } from 'react';
 
 //useReducer 없이 Context를 사용해서 전역 상태 관리를 하기 위해서
 //아래와 같이 업데이트 함수들이 들어있는 객체를 바로 선언해주었다.
@@ -14,15 +14,37 @@ export interface Todo{
 }
 
 export type Action=
-    | { add(input: string): void; }
-    | { toggle(id: number): void; }
-    | { remove(id: number): void; }
-    | any
+    | { type:'ADD',todo:Todo }
+    | { type:'TOGGLE', id:number }
+    | { type:'REMOVE', id:number }
 
+type TodoDispatch=Dispatch<Action>;
+
+function reducer(state:Todo[],action:Action){
+    switch(action.type){
+        case 'ADD':{
+            return state.concat(action.todo)
+        }
+        case 'TOGGLE':{
+            return state.map((todo:Todo)=>todo.id===action.id?{
+                ...todo,
+                checked:!todo.checked
+            }:todo)
+        }
+        case 'REMOVE':{
+            return state.filter((todo)=>todo.id!==action.id)
+        }
+        default:{
+            return state
+        }
+    }
+}
+
+const IdContext=createContext<MutableRefObject<number>|undefined>(undefined);
 const TodoValueContext = createContext<Todo[]|undefined>(undefined);
-const TodoActionsContext = createContext<Action|undefined>(undefined);
+const TodoActionsContext = createContext<TodoDispatch|undefined>(undefined);
 
-function TodoProvider({ children }:any) {
+function TodoProvider({ children }:{children:React.ReactNode}) {
 
     const idRef = useRef(3);
 
@@ -32,40 +54,30 @@ function TodoProvider({ children }:any) {
         { id: 2, text: '❌를 눌러 제거하세요.', checked: false },
     ]
 
-    const [todos, setTodos] = useState(init);
+    //const [todos, setTodos] = useState(init);
 
-    const actions = useMemo(() => ({
-        add(input:string) {
-            const id = idRef.current;
-            idRef.current += 1;
-            setTodos((todos) => [...todos, {
-                id: id,
-                text: input,
-                checked: false
-            }])
-        },
-        toggle(id:number) {
-
-            setTodos((todos) => todos.map((todo) => todo.id === id ? {
-                ...todo,
-                checked: !todo.checked
-            } : todo));
-        },
-        remove(id:number) {
-            setTodos((todos) => todos.filter(todo => todo.id !== id));
-        }
-    }), []);
+    const [todos,dispatch]=useReducer(reducer,init);
 
     return (
-        <TodoActionsContext.Provider value={actions}>
+        <TodoActionsContext.Provider value={dispatch}>
             <TodoValueContext.Provider value={todos}>
+                <IdContext.Provider value={idRef}>
                 {children}
+                </IdContext.Provider>
             </TodoValueContext.Provider>
         </TodoActionsContext.Provider>
     )
 }
 
 export default TodoProvider;
+
+export function useNextId(){
+    const nextId=useContext(IdContext);
+    if (nextId === undefined) {
+        throw new Error('useTodosValue should be used within TodosProvider');
+    }
+    return nextId;
+}
 
 export function useTodoValue() {
     const value = useContext(TodoValueContext);
@@ -76,9 +88,9 @@ export function useTodoValue() {
 }
 
 export function useTodoActions() {
-    const value = useContext(TodoActionsContext);
-    if (value === undefined) {
+    const action = useContext(TodoActionsContext);
+    if (action === undefined) {
         throw new Error('useTodosValue should be used within TodosProvider');
     }
-    return value;
+    return action;
 }

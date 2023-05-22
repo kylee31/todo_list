@@ -2,14 +2,12 @@ import '../css/TodoItem.css';
 import { ItemActions } from './TodoItemList';
 
 /*
-   
     //총 5가지의 props를 전달받음
     //text: todo의 내용
     //checked: 체크박스 상태
     //id: todo의 고유id
     //onToggle: 체크박스 켜고 끄는 함수
     //onRemove: 아이템 삭제 함수
-
 */
 
 interface TodoItemType extends ItemActions{
